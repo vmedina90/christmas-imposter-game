@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎄 Host Dashboard - Christmas Impostor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --christmas-red: #c41e3a;
+      --christmas-green: #165b33;
+      --christmas-gold: #f8b229;
+      --snow-white: #f8f8ff;
+      --dark-green: #0d3320;
+      --warm-cream: #fff8e7;
+    }
+
+    body {
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0a1628 0%, #1a2a44 50%, #2d1f3d 100%);
+      color: var(--snow-white);
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .title {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 3rem;
+      color: var(--christmas-gold);
+      text-shadow: 3px 3px 0 var(--christmas-red);
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+      font-style: italic;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 800px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(22, 91, 51, 0.9) 0%, rgba(13, 51, 32, 0.95) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 2px solid rgba(248, 178, 41, 0.3);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 1.5rem;
+      color: var(--christmas-gold);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .phase-indicator {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .phase-lobby { background: rgba(248, 178, 41, 0.3); color: var(--christmas-gold); }
+    .phase-playing { background: rgba(22, 91, 51, 0.5); color: #4ade80; }
+    .phase-voting { background: rgba(196, 30, 58, 0.3); color: #ff6b6b; }
+    .phase-results { background: rgba(138, 43, 226, 0.3); color: #da70d6; }
+
+    .player-list {
+      list-style: none;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .player-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      border-left: 4px solid transparent;
+    }
+
+    .player-item.ready {
+      border-left-color: var(--christmas-green);
+      background: rgba(22, 91, 51, 0.2);
+    }
+
+    .player-item.impostor {
+      border-left-color: var(--christmas-red);
+      background: rgba(196, 30, 58, 0.2);
+    }
+
+    .player-item.disconnected {
+      opacity: 0.5;
+      border-left-color: #666;
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .player-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .player-role {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .badge-impostor { background: var(--christmas-red); color: white; }
+    .badge-ready { background: var(--christmas-green); color: white; }
+    .badge-voted { background: #9333ea; color: white; }
+    .badge-disconnected { background: #666; color: white; }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--christmas-red) 0%, #a01830 100%);
+      color: white;
+      box-shadow: 0 5px 20px rgba(196, 30, 58, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--christmas-gold) 0%, #d49b20 100%);
+      color: var(--dark-green);
+      box-shadow: 0 5px 20px rgba(248, 178, 41, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--christmas-green) 0%, #0d4025 100%);
+      color: white;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: white;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .secret-info {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .secret-label {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .secret-word {
+      font-size: 1.8rem;
+      color: var(--christmas-gold);
+      font-weight: bold;
+    }
+
+    .secret-word-spanish {
+      font-size: 1.2rem;
+      color: var(--warm-cream);
+      font-style: italic;
+    }
+
+    .impostor-name {
+      color: var(--christmas-red);
+      font-weight: bold;
+    }
+
+    .votes-list {
+      list-style: none;
+      margin-top: 1rem;
+    }
+
+    .vote-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 5px;
+      margin-bottom: 0.3rem;
+    }
+
+    .vote-count {
+      color: var(--christmas-gold);
+      font-weight: bold;
+    }
+
+    .connection-status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .connection-status.connected {
+      background: rgba(22, 91, 51, 0.8);
+      color: white;
+    }
+
+    .connection-status.disconnected {
+      background: rgba(196, 30, 58, 0.8);
+      color: white;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .player-count {
+      text-align: center;
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .message.error {
+      background: rgba(196, 30, 58, 0.3);
+      border: 1px solid var(--christmas-red);
+    }
+
+    .message.success {
+      background: rgba(22, 91, 51, 0.3);
+      border: 1px solid var(--christmas-green);
+    }
+
+    .qr-section {
+      text-align: center;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+
+    .join-url {
+      font-size: 1.2rem;
+      color: var(--christmas-gold);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="connection-status connected" id="connectionStatus">
+    <span class="status-dot"></span>
+    <span id="connectionText">Connected</span>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1 class="title">🎄 Host Dashboard</h1>
+      <p class="subtitle">Control Panel - You are NOT a player</p>
+    </header>
+
+    <div class="qr-section">
+      <p>Players join at:</p>
+      <p class="join-url" id="joinUrl">Loading...</p>
+    </div>
+
+    <div class="message error" id="errorMessage" style="display: none;"></div>
+
+    <div class="dashboard">
+      <!-- Left Column - Players -->
+      <div class="card">
+        <h2 class="card-title">👥 Players</h2>
+        <div class="phase-indicator phase-lobby" id="phaseIndicator">LOBBY</div>
+        <p class="player-count" id="playerCount">0 players</p>
+        <ul class="player-list" id="playerList">
+          <li style="text-align: center; color: rgba(255,255,255,0.5); padding: 2rem;">
+            Waiting for players to join...
+          </li>
+        </ul>
+        
+        <!-- Secret info completely hidden - host is playing too! -->
+
+        <div id="votesSection" style="display: none; margin-top: 1rem;">
+          <div class="secret-label">VOTES:</div>
+          <ul class="votes-list" id="votesList"></ul>
+        </div>
+      </div>
+
+      <!-- Right Column - Controls -->
+      <div class="card">
+        <h2 class="card-title">🎮 Controls</h2>
+        <div class="controls">
+          <button class="btn btn-primary" id="generateBtn" disabled>
+            🎲 Generate Roles
+          </button>
+          <button class="btn btn-secondary" id="startVoteBtn" disabled>
+            🗳️ Start Voting
+          </button>
+          <button class="btn btn-success" id="continueBtn" disabled>
+            🔄 Continue Playing
+          </button>
+          <button class="btn btn-secondary" id="newGameBtn">
+            🎮 New Game
+          </button>
+          <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+          <button class="btn btn-warning" id="clearOfflineBtn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+            🧹 Clear Offline Players
+          </button>
+          <button class="btn btn-danger" id="refreshBtn" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+            🔄 Refresh Dashboard
+          </button>
+          <button class="btn btn-danger" id="resetBtn">
+            ⚠️ Reset Everything
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    
+    // Get and display join URL
+    const joinUrl = window.location.origin;
+    document.getElementById('joinUrl').textContent = joinUrl;
+
+    // Connection status
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connectionStatus');
+      const textEl = document.getElementById('connectionText');
+      
+      if (connected) {
+        statusEl.className = 'connection-status connected';
+        textEl.textContent = 'Connected';
+      } else {
+        statusEl.className = 'connection-status disconnected';
+        textEl.textContent = 'Disconnected';
+      }
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      setTimeout(() => {
+        errorEl.style.display = 'none';
+      }, 3000);
+    }
+
+    // Join as host (observer)
+    socket.emit('hostJoin');
+
+    // Button handlers
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      socket.emit('hostGenerate');
+    });
+
+    document.getElementById('startVoteBtn').addEventListener('click', () => {
+      socket.emit('hostStartVote');
+    });
+
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      socket.emit('hostContinue');
+    });
+
+    document.getElementById('newGameBtn').addEventListener('click', () => {
+      socket.emit('hostNewGame');
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset EVERYTHING? All players will be kicked.')) {
+        socket.emit('hostReset');
+      }
+    });
+
+    document.getElementById('clearOfflineBtn').addEventListener('click', () => {
+      socket.emit('hostClearOffline');
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      socket.emit('hostJoin');
+    });
+
+    function kickPlayer(name) {
+      if (confirm(`Kick ${name} from the game?`)) {
+        socket.emit('hostKickPlayer', name);
+      }
+    }
+
+    // Handle host state updates
+    socket.on('hostState', (state) => {
+      console.log('Host state:', state);
+      
+      // Update phase indicator
+      const phaseEl = document.getElementById('phaseIndicator');
+      phaseEl.className = 'phase-indicator phase-' + state.phase;
+      phaseEl.textContent = state.phase.toUpperCase();
+
+      // Update player count
+      document.getElementById('playerCount').textContent = 
+        state.players.length + ' player' + (state.players.length !== 1 ? 's' : '');
+
+      // Update player list
+      const list = document.getElementById('playerList');
+      if (state.players.length === 0) {
+        list.innerHTML = '<li style="text-align: center; color: rgba(255,255,255,0.5); padding: 2rem;">Waiting for players to join...</li>';
+      } else {
+        // Don't show who is impostor - keep it secret!
+        list.innerHTML = state.players.map(p => `
+          <li class="player-item ${p.isReady ? 'ready' : ''} ${p.isDisconnected ? 'disconnected' : ''}">
+            <div class="player-info">
+              <span class="player-name">
+                ${p.name}
+                ${p.isDisconnected ? '<span class="badge badge-disconnected">OFFLINE</span>' : ''}
+              </span>
+              <span class="player-role">
+                ${p.isReady ? '✓ Ready' : 'Not ready'}
+                ${p.hasVoted ? ' • Voted' : ''}
+              </span>
+            </div>
+            <button onclick="kickPlayer('${p.name.replace(/'/g, "\\'")}')" style="background: #dc2626; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">✕</button>
+          </li>
+        `).join('');
+      }
+
+      // Secret info completely hidden - host is playing too!
+
+      // Update votes section
+      const votesSection = document.getElementById('votesSection');
+      if (state.votes && Object.keys(state.votes).length > 0) {
+        votesSection.style.display = 'block';
+        const sortedVotes = Object.entries(state.votes).sort((a, b) => b[1] - a[1]);
+        document.getElementById('votesList').innerHTML = sortedVotes.map(([name, count]) => `
+          <li class="vote-item">
+            <span>${name}</span>
+            <span class="vote-count">${count} vote${count !== 1 ? 's' : ''}</span>
+          </li>
+        `).join('');
+      } else {
+        votesSection.style.display = 'none';
+      }
+
+      // Update button states
+      const connectedPlayers = state.players.filter(p => !p.isDisconnected);
+      const allReady = connectedPlayers.length > 0 && connectedPlayers.every(p => p.isReady);
+      const enoughPlayers = connectedPlayers.length >= 3;
+
+      document.getElementById('generateBtn').disabled = 
+        state.phase !== 'lobby' || !allReady || !enoughPlayers;
+      
+      document.getElementById('startVoteBtn').disabled = 
+        state.phase !== 'playing';
+      
+      document.getElementById('continueBtn').disabled = 
+        state.phase !== 'results' || state.votedCorrectly === true;
+      
+      document.getElementById('newGameBtn').disabled = false;
+    });
+
+    socket.on('error', (message) => {
+      showError(message);
+    });
+
+    socket.on('disconnect', () => {
+      updateConnectionStatus(false);
+    });
+
+    socket.on('connect', () => {
+      updateConnectionStatus(true);
+      socket.emit('hostJoin');
+    });
+  </script>
+</body>
+</html>
+

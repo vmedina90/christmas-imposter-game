@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🎄 Christmas Impostor Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --christmas-red: #c41e3a;
+      --christmas-green: #165b33;
+      --christmas-gold: #f8b229;
+      --snow-white: #f8f8ff;
+      --dark-green: #0d3320;
+      --warm-cream: #fff8e7;
+    }
+
+    body {
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0a1628 0%, #1a2a44 50%, #2d1f3d 100%);
+      color: var(--snow-white);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Prevent pull-to-refresh on mobile */
+    body {
+      overscroll-behavior-y: contain;
+    }
+
+    /* Snowfall Animation */
+    .snowflakes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .snowflake {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+      animation: fall linear infinite;
+      text-shadow: 0 0 5px rgba(255,255,255,0.5);
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0.3;
+      }
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .title {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 3rem;
+      color: var(--christmas-gold);
+      text-shadow: 
+        3px 3px 0 var(--christmas-red),
+        0 0 30px rgba(248, 178, 41, 0.5);
+      margin-bottom: 0.5rem;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 
+          3px 3px 0 var(--christmas-red),
+          0 0 30px rgba(248, 178, 41, 0.3);
+      }
+      to {
+        text-shadow: 
+          3px 3px 0 var(--christmas-red),
+          0 0 50px rgba(248, 178, 41, 0.7);
+      }
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+      font-style: italic;
+    }
+
+    /* Cards */
+    .card {
+      background: linear-gradient(135deg, rgba(22, 91, 51, 0.9) 0%, rgba(13, 51, 32, 0.95) 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid rgba(248, 178, 41, 0.3);
+      box-shadow: 
+        0 10px 40px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-title {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 1.8rem;
+      color: var(--christmas-gold);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    /* Input Styles */
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--warm-cream);
+      font-size: 1.1rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-size: 1.2rem;
+      font-family: 'Crimson Pro', serif;
+      border: 2px solid var(--christmas-gold);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      background: rgba(255,255,255,0.2);
+      box-shadow: 0 0 20px rgba(248, 178, 41, 0.4);
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 1.4rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--christmas-red) 0%, #a01830 100%);
+      color: white;
+      box-shadow: 0 5px 20px rgba(196, 30, 58, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(196, 30, 58, 0.6);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--christmas-gold) 0%, #d49b20 100%);
+      color: var(--dark-green);
+      box-shadow: 0 5px 20px rgba(248, 178, 41, 0.4);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(248, 178, 41, 0.6);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--christmas-green) 0%, #0d4025 100%);
+      color: white;
+      box-shadow: 0 5px 20px rgba(22, 91, 51, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Player List */
+    .player-list {
+      list-style: none;
+      margin: 1rem 0;
+    }
+
+    .player-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      border-left: 4px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .player-item.ready {
+      border-left-color: var(--christmas-green);
+      background: rgba(22, 91, 51, 0.2);
+    }
+
+    .player-item.host {
+      border-left-color: var(--christmas-gold);
+    }
+
+    .player-item.disconnected {
+      opacity: 0.5;
+      border-left-color: #666;
+    }
+
+    .player-name {
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .badge-host {
+      background: var(--christmas-gold);
+      color: var(--dark-green);
+    }
+
+    .badge-ready {
+      background: var(--christmas-green);
+      color: white;
+    }
+
+    .badge-voted {
+      background: var(--christmas-red);
+      color: white;
+    }
+
+    .badge-disconnected {
+      background: #666;
+      color: white;
+    }
+
+    /* Role Reveal */
+    .role-reveal {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .role-card {
+      padding: 3rem 2rem;
+      border-radius: 20px;
+      margin: 1rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-card.impostor {
+      background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
+      border: 3px solid #ff4444;
+      animation: pulse-red 1.5s infinite;
+    }
+
+    .role-card.player {
+      background: linear-gradient(135deg, var(--christmas-green) 0%, #0d4025 100%);
+      border: 3px solid #4ade80;
+      animation: pulse-green 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(255, 68, 68, 0.8); }
+    }
+
+    @keyframes pulse-green {
+      0%, 100% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(74, 222, 128, 0.8); }
+    }
+
+    .role-label {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .secret-word {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--christmas-gold);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      animation: reveal 0.5s ease-out;
+      line-height: 1.3;
+    }
+
+    .secret-word .spanish {
+      display: block;
+      font-size: 1.8rem;
+      color: var(--warm-cream);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    @keyframes reveal {
+      from {
+        transform: scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Voting */
+    .vote-section {
+      margin-top: 1rem;
+    }
+
+    .vote-btn {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      color: white;
+      font-size: 1.1rem;
+      font-family: 'Crimson Pro', serif;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .vote-btn:hover:not(:disabled) {
+      background: rgba(196, 30, 58, 0.5);
+      border-color: var(--christmas-red);
+      transform: translateX(5px);
+    }
+
+    .vote-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Results */
+    .results-list {
+      list-style: none;
+      margin: 1rem 0;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-item.top-voted {
+      background: rgba(196, 30, 58, 0.3);
+      border: 2px solid var(--christmas-red);
+    }
+
+    .vote-count {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--christmas-gold);
+    }
+
+    /* Flash Effects */
+    .flash-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+    }
+
+    .flash-overlay.success {
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.8) 0%, rgba(22, 91, 51, 0.9) 100%);
+      animation: flash 1s ease-out;
+    }
+
+    .flash-overlay.fail {
+      background: radial-gradient(circle, rgba(255, 68, 68, 0.8) 0%, rgba(139, 0, 0, 0.9) 100%);
+      animation: flash 1s ease-out;
+    }
+
+    @keyframes flash {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Screen States */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Decorations */
+    .ornament {
+      position: fixed;
+      font-size: 2rem;
+      z-index: 0;
+      opacity: 0.3;
+    }
+
+    /* Messages */
+    .message {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .message.error {
+      background: rgba(196, 30, 58, 0.3);
+      border: 1px solid var(--christmas-red);
+    }
+
+    .message.info {
+      background: rgba(248, 178, 41, 0.2);
+      border: 1px solid var(--christmas-gold);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .title {
+        font-size: 2rem;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+      
+      .btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 1.1rem;
+      }
+      
+      .secret-word {
+        font-size: 2rem;
+      }
+      
+      .secret-word .spanish {
+        font-size: 1.5rem;
+      }
+      
+      .role-label {
+        font-size: 2rem;
+      }
+    }
+
+    /* Waiting indicator */
+    .waiting {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 1rem;
+    }
+
+    .waiting-dots span {
+      animation: blink 1.4s infinite both;
+    }
+
+    .waiting-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .waiting-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    .instructions {
+      text-align: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.95rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+
+    /* Connection status */
+    .connection-status {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0.8;
+    }
+
+    .connection-status.connected {
+      background: rgba(22, 91, 51, 0.8);
+      color: white;
+    }
+
+    .connection-status.disconnected {
+      background: rgba(196, 30, 58, 0.8);
+      color: white;
+      animation: pulse-status 1s infinite;
+    }
+
+    @keyframes pulse-status {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  </style>
+</head>
+<body>
+  <!-- Connection Status -->
+  <div class="connection-status connected" id="connectionStatus">
+    <span class="status-dot"></span>
+    <span id="connectionText">Connected</span>
+  </div>
+
+  <!-- Snowfall -->
+  <div class="snowflakes" id="snowflakes"></div>
+  
+  <!-- Flash Overlay -->
+  <div class="flash-overlay" id="flashOverlay"></div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <header class="header">
+      <h1 class="title">🎄 Christmas Impostor</h1>
+      <p class="subtitle">Find the impostor among us! / ¡Encuentra al impostor!</p>
+    </header>
+
+    <!-- Join Screen -->
+    <div class="screen active" id="joinScreen">
+      <div class="card">
+        <h2 class="card-title">🎅 Join the Game / Únete</h2>
+        <div class="input-group">
+          <label for="playerName">Your Name / Tu Nombre</label>
+          <input type="text" id="playerName" placeholder="Enter your name..." maxlength="20">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="joinBtn">🎁 Join Game</button>
+        </div>
+      </div>
+      <div class="instructions">
+        <p>Enter your name to join! / ¡Escribe tu nombre para unirte!</p>
+        <p style="margin-top: 0.5rem;">You need at least 3 players to start. / Necesitas al menos 3 jugadores.</p>
+        <button id="clearDataBtn" style="margin-top: 1rem; background: #6b7280; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.9rem;">
+          🗑️ Having issues? Clear My Data / Borrar Mis Datos
+        </button>
+      </div>
+    </div>
+
+    <!-- Lobby Screen -->
+    <div class="screen" id="lobbyScreen">
+      <div class="card">
+        <h2 class="card-title">🦌 Waiting Room / Sala de Espera</h2>
+        <ul class="player-list" id="playerList"></ul>
+        <div class="btn-group">
+          <button class="btn btn-success" id="readyBtn">✓ Ready / Listo</button>
+          <button class="btn btn-secondary" id="unreadyBtn" style="display:none;">✗ Not Ready</button>
+        </div>
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <button class="btn" id="exitBtn" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; font-size: 1rem; padding: 0.6rem 1.5rem;">
+            🚪 Exit Game / Salir
+          </button>
+        </div>
+      </div>
+      <div class="instructions" id="lobbyInstructions">
+        <p>Waiting for all players to be ready...</p>
+        <p>Esperando que todos estén listos...</p>
+      </div>
+    </div>
+
+    <!-- Playing Screen - Role Reveal -->
+    <div class="screen" id="playingScreen">
+      <div class="card role-reveal">
+        <h2 class="card-title">🎁 Your Role / Tu Rol</h2>
+        <div class="role-card" id="roleCard">
+          <div class="role-label" id="roleLabel"></div>
+          <div class="secret-word" id="secretWord"></div>
+        </div>
+        <div style="margin-top: 1.5rem;">
+          <button class="btn btn-primary" id="acceptRoleBtn">✓ OK - I've seen it! / ¡Lo vi!</button>
+        </div>
+      </div>
+      <div class="instructions">
+        <p>🔒 Memorize your role, then tap OK to hide it!</p>
+        <p>🔒 ¡Memoriza tu rol y toca OK para ocultarlo!</p>
+      </div>
+    </div>
+
+    <!-- Game In Session Screen -->
+    <div class="screen" id="gameSessionScreen">
+      <div class="card" style="text-align: center; padding: 3rem;">
+        <h2 class="card-title">🎮 Game In Session / Juego en Curso</h2>
+        <div style="font-size: 4rem; margin: 2rem 0;">🎭</div>
+        <p style="font-size: 1.3rem; color: var(--warm-cream);">Discuss and find the impostor!</p>
+        <p style="font-size: 1.2rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem;">¡Hablen y encuentren al impostor!</p>
+        <div style="margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 10px;">
+          <p style="color: rgba(255,255,255,0.6);">Waiting for host to start voting...</p>
+          <p style="color: rgba(255,255,255,0.6);">Esperando que el anfitrión inicie la votación...</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">👥 Players / Jugadores</h2>
+        <ul class="player-list" id="gameSessionPlayerList"></ul>
+      </div>
+      <div style="text-align: center; margin-top: 1rem;">
+        <button class="btn" id="peekRoleBtn" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; font-size: 1rem;">
+          👁️ Peek at my role / Ver mi rol
+        </button>
+      </div>
+    </div>
+
+    <!-- Voting Screen -->
+    <div class="screen" id="votingScreen">
+      <div class="card">
+        <h2 class="card-title">🗳️ Vote for the Impostor! / ¡Vota!</h2>
+        <p style="text-align: center; margin-bottom: 1rem; color: rgba(255,255,255,0.7);">
+          Who do you think is the impostor? / ¿Quién crees que es el impostor?
+        </p>
+        <div class="vote-section" id="voteSection"></div>
+        <div id="votingStatus" class="waiting" style="display: none;">
+          <span>Waiting for all votes / Esperando votos</span>
+          <span class="waiting-dots"><span>.</span><span>.</span><span>.</span></span>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">📊 Vote Status / Estado</h2>
+        <ul class="player-list" id="votingPlayerList"></ul>
+      </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div class="screen" id="resultsScreen">
+      <div class="card">
+        <h2 class="card-title" id="resultsTitle">🎯 Results / Resultados</h2>
+        <div id="resultsMessage" class="message"></div>
+        <ul class="results-list" id="resultsList"></ul>
+      </div>
+      <div class="instructions" style="margin-top: 1rem;">
+        <p>⏳ Waiting for host to continue...</p>
+        <p>⏳ Esperando al anfitrión...</p>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="message error" id="errorMessage" style="display: none;"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Generate unique identifier for this device/browser (persists across sessions)
+    function getOrCreateIdentifier() {
+      let identifier = localStorage.getItem('playerIdentifier');
+      if (!identifier) {
+        identifier = 'player_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('playerIdentifier', identifier);
+      }
+      return identifier;
+    }
+
+    // Store player name for reconnection
+    function savePlayerName(name) {
+      localStorage.setItem('playerName', name);
+    }
+
+    function getSavedPlayerName() {
+      return localStorage.getItem('playerName');
+    }
+
+    // Create snowflakes
+    function createSnowflakes() {
+      const container = document.getElementById('snowflakes');
+      const snowflakeChars = ['❄', '❅', '❆', '✦', '✧', '⋆'];
+      
+      for (let i = 0; i < 50; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+        snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+        snowflake.style.left = Math.random() * 100 + '%';
+        snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        snowflake.style.animationDelay = Math.random() * 10 + 's';
+        snowflake.style.fontSize = (Math.random() * 1 + 0.5) + 'rem';
+        container.appendChild(snowflake);
+      }
+    }
+    createSnowflakes();
+
+    // Socket connection with reconnection settings
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 60000
+    });
+    
+    // State
+    let myState = {
+      name: null,
+      identifier: getOrCreateIdentifier(),
+      isHost: false,
+      hasVoted: false,
+      inGame: false
+    };
+
+    // Connection status
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connectionStatus');
+      const textEl = document.getElementById('connectionText');
+      
+      if (connected) {
+        statusEl.className = 'connection-status connected';
+        textEl.textContent = 'Connected';
+      } else {
+        statusEl.className = 'connection-status disconnected';
+        textEl.textContent = 'Reconnecting...';
+      }
+    }
+
+    // DOM Elements
+    const screens = {
+      join: document.getElementById('joinScreen'),
+      lobby: document.getElementById('lobbyScreen'),
+      playing: document.getElementById('playingScreen'),
+      gameSession: document.getElementById('gameSessionScreen'),
+      voting: document.getElementById('votingScreen'),
+      results: document.getElementById('resultsScreen')
+    };
+
+    // Track if player has seen their role
+    let hasSeenRole = false;
+    let currentRole = null;
+    let currentSecretWord = null;
+
+    function showScreen(screenName) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[screenName].classList.add('active');
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      setTimeout(() => {
+        errorEl.style.display = 'none';
+      }, 3000);
+    }
+
+    function flashScreen(success) {
+      const overlay = document.getElementById('flashOverlay');
+      overlay.className = 'flash-overlay ' + (success ? 'success' : 'fail');
+      setTimeout(() => {
+        overlay.className = 'flash-overlay';
+      }, 1000);
+    }
+
+    // Heartbeat to keep connection alive (especially on mobile)
+    setInterval(() => {
+      if (socket.connected && myState.inGame) {
+        socket.emit('heartbeat');
+      }
+    }, 30000);
+
+    // Handle visibility change (phone screen off/on)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && myState.inGame) {
+        console.log('Page visible again, checking connection...');
+        if (!socket.connected) {
+          socket.connect();
+        }
+      }
+    });
+
+    // Join
+    document.getElementById('joinBtn').addEventListener('click', () => {
+      const name = document.getElementById('playerName').value.trim();
+      if (!name) {
+        showError('Please enter your name! / ¡Por favor escribe tu nombre!');
+        return;
+      }
+      myState.name = name;
+      savePlayerName(name);
+      socket.emit('join', { name: name, identifier: myState.identifier });
+      myState.inGame = true;
+    });
+
+    document.getElementById('playerName').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('joinBtn').click();
+      }
+    });
+
+    // Ready
+    document.getElementById('readyBtn').addEventListener('click', () => {
+      socket.emit('ready');
+      document.getElementById('readyBtn').style.display = 'none';
+      document.getElementById('unreadyBtn').style.display = 'inline-block';
+    });
+
+    document.getElementById('unreadyBtn').addEventListener('click', () => {
+      socket.emit('unready');
+      document.getElementById('readyBtn').style.display = 'inline-block';
+      document.getElementById('unreadyBtn').style.display = 'none';
+    });
+
+    // Game controls are now on host dashboard only
+
+    // Game controls are on host dashboard only
+
+    // Exit Game
+    document.getElementById('exitBtn').addEventListener('click', () => {
+      if (confirm('Are you sure you want to exit? / ¿Seguro que quieres salir?')) {
+        socket.emit('exitGame');
+      }
+    });
+
+    // Handle game state updates
+    socket.on('gameState', (state) => {
+      console.log('Game state:', state);
+      myState.isHost = state.isHost;
+      myState.inGame = true;
+
+      if (state.phase === 'lobby') {
+        showScreen('lobby');
+        renderLobby(state);
+        // Reset role visibility for new game
+        hasSeenRole = false;
+        currentRole = null;
+        currentSecretWord = null;
+      } else if (state.phase === 'playing') {
+        // Save the role info
+        currentRole = state.role;
+        currentSecretWord = state.secretWord;
+        
+        if (!hasSeenRole) {
+          // Show role reveal screen first
+          showScreen('playing');
+          renderPlaying(state);
+        } else {
+          // Already saw role, show game session screen
+          showScreen('gameSession');
+          renderGameSession(state);
+        }
+      } else if (state.phase === 'voting') {
+        showScreen('voting');
+        renderVoting(state);
+      } else if (state.phase === 'results') {
+        showScreen('results');
+        renderResults(state);
+      }
+    });
+
+    function renderLobby(state) {
+      const list = document.getElementById('playerList');
+      list.innerHTML = state.players.map(p => `
+        <li class="player-item ${p.isReady ? 'ready' : ''} ${p.isDisconnected ? 'disconnected' : ''}">
+          <span class="player-name">
+            ${p.name}
+            ${p.isDisconnected ? '<span class="badge badge-disconnected">OFFLINE</span>' : ''}
+          </span>
+          ${p.isDisconnected ? '<span style="color: rgba(255,255,255,0.4)">reconnecting...</span>' : 
+            (p.isReady ? '<span class="badge badge-ready">READY</span>' : '<span style="color: rgba(255,255,255,0.4)">waiting...</span>')}
+        </li>
+      `).join('');
+
+      // Find current player's ready state and update buttons accordingly
+      const myPlayer = state.players.find(p => p.name === state.myName);
+      if (myPlayer) {
+        if (myPlayer.isReady) {
+          document.getElementById('readyBtn').style.display = 'none';
+          document.getElementById('unreadyBtn').style.display = 'inline-block';
+        } else {
+          document.getElementById('readyBtn').style.display = 'inline-block';
+          document.getElementById('unreadyBtn').style.display = 'none';
+        }
+      }
+
+      const connectedPlayers = state.players.filter(p => !p.isDisconnected);
+      const allReady = connectedPlayers.every(p => p.isReady);
+      const enoughPlayers = connectedPlayers.length >= 3;
+
+      const instructions = document.getElementById('lobbyInstructions');
+      if (connectedPlayers.length < 3) {
+        instructions.innerHTML = '<p>⏳ Need at least 3 players to start (currently ' + connectedPlayers.length + ')</p><p>Necesitas al menos 3 jugadores (actualmente ' + connectedPlayers.length + ')</p>';
+      } else if (!allReady) {
+        instructions.innerHTML = '<p>⏳ Waiting for all players to be ready...</p><p>Esperando que todos estén listos...</p>';
+      } else {
+        instructions.innerHTML = '<p>✅ All ready! Waiting for host to start...</p><p>✅ ¡Todos listos! Esperando al anfitrión...</p>';
+      }
+    }
+
+    function renderPlaying(state) {
+      const roleCard = document.getElementById('roleCard');
+      const roleLabel = document.getElementById('roleLabel');
+      const secretWord = document.getElementById('secretWord');
+
+      if (state.role === 'impostor') {
+        roleCard.className = 'role-card impostor';
+        roleLabel.textContent = '😈 IMPOSTOR';
+        secretWord.innerHTML = 'Blend in!<span class="spanish">¡Intenta encajar!</span>';
+      } else {
+        roleCard.className = 'role-card player';
+        roleLabel.textContent = '🎄 The secret word is:';
+        secretWord.innerHTML = `${state.secretWord.en}<span class="spanish">${state.secretWord.es}</span>`;
+      }
+    }
+
+    function renderGameSession(state) {
+      const list = document.getElementById('gameSessionPlayerList');
+      list.innerHTML = state.players.map(p => `
+        <li class="player-item ${p.isDisconnected ? 'disconnected' : ''}">
+          <span class="player-name">
+            ${p.name}
+            ${p.isDisconnected ? '<span class="badge badge-disconnected">OFFLINE</span>' : ''}
+          </span>
+        </li>
+      `).join('');
+    }
+
+    // Accept role button - hide role and go to game session
+    document.getElementById('acceptRoleBtn').addEventListener('click', () => {
+      hasSeenRole = true;
+      showScreen('gameSession');
+      // Trigger a re-render of game session with current state
+      const list = document.getElementById('gameSessionPlayerList');
+      // Will be updated on next state broadcast
+    });
+
+    // Peek at role button
+    document.getElementById('peekRoleBtn').addEventListener('click', () => {
+      if (currentRole === 'impostor') {
+        alert('😈 You are the IMPOSTOR!\n\n😈 ¡Eres el IMPOSTOR!');
+      } else if (currentSecretWord) {
+        alert(`🎄 Secret Word: ${currentSecretWord.en}\n\n🎄 Palabra Secreta: ${currentSecretWord.es}`);
+      }
+    });
+
+    function renderVoting(state) {
+      const section = document.getElementById('voteSection');
+      const myPlayer = state.players.find(p => p.name === state.myName);
+      const hasVoted = myPlayer?.hasVoted;
+
+      if (hasVoted) {
+        section.innerHTML = '<p style="text-align: center; color: var(--christmas-gold);">✅ You have voted! / ¡Ya votaste!</p>';
+        document.getElementById('votingStatus').style.display = 'flex';
+      } else {
+        // Filter out disconnected players AND yourself (can't vote for yourself)
+        const votablePlayersHtml = state.players
+          .filter(p => !p.isDisconnected && p.name !== state.myName)
+          .map(p => `
+          <button class="vote-btn" onclick="vote('${p.name.replace(/'/g, "\\'")}')">
+            🎯 ${p.name}
+          </button>
+        `).join('');
+        
+        // Add skip vote option
+        const skipHtml = `
+          <button class="vote-btn" onclick="vote('SKIP')" style="background: rgba(100,100,100,0.3); border-color: #666; margin-top: 1rem;">
+            ⏭️ Skip Vote / Saltar Voto
+          </button>
+        `;
+        
+        section.innerHTML = votablePlayersHtml + skipHtml;
+        document.getElementById('votingStatus').style.display = 'none';
+      }
+
+      const list = document.getElementById('votingPlayerList');
+      list.innerHTML = state.players.map(p => `
+        <li class="player-item ${p.hasVoted ? 'ready' : ''} ${p.isDisconnected ? 'disconnected' : ''}">
+          <span class="player-name">${p.name}</span>
+          ${p.isDisconnected ? '<span class="badge badge-disconnected">OFFLINE</span>' : 
+            (p.hasVoted ? '<span class="badge badge-voted">VOTED</span>' : '<span style="color: rgba(255,255,255,0.4)">voting...</span>')}
+        </li>
+      `).join('');
+    }
+
+    function vote(playerName) {
+      socket.emit('vote', playerName);
+    }
+
+    function renderResults(state) {
+      // Flash based on result
+      if (state.votedCorrectly !== null) {
+        flashScreen(state.votedCorrectly);
+      }
+
+      const title = document.getElementById('resultsTitle');
+      const message = document.getElementById('resultsMessage');
+      
+      if (state.votedCorrectly) {
+        title.textContent = '🎉 Victory! / ¡Victoria!';
+        message.className = 'message info';
+        message.innerHTML = `<strong>${state.imposterName}</strong> was the impostor!<br>${state.imposterName} era el impostor!<br><br>The word was: <strong>${state.secretWord?.en || ''}</strong><br>La palabra era: <strong>${state.secretWord?.es || ''}</strong>`;
+      } else {
+        title.textContent = '❌ Wrong! / ¡Incorrecto!';
+        message.className = 'message error';
+        message.innerHTML = `The impostor is still among you...<br>El impostor sigue entre ustedes...<br><br>Keep playing! / ¡Sigan jugando!`;
+      }
+
+      // Sort votes by count
+      const sortedVotes = Object.entries(state.votes || {}).sort((a, b) => b[1] - a[1]);
+      const topVotes = sortedVotes.length > 0 ? sortedVotes[0][1] : 0;
+
+      const list = document.getElementById('resultsList');
+      list.innerHTML = sortedVotes.map(([name, count]) => `
+        <li class="result-item ${count === topVotes ? 'top-voted' : ''}">
+          <span class="player-name">${name}</span>
+          <span class="vote-count">${count} vote${count !== 1 ? 's' : ''}</span>
+        </li>
+      `).join('');
+
+    }
+
+    // Handle errors
+    socket.on('error', (message) => {
+      showError(message);
+    });
+
+    // Handle reset
+    socket.on('reset', () => {
+      showScreen('join');
+      document.getElementById('readyBtn').style.display = 'inline-block';
+      document.getElementById('unreadyBtn').style.display = 'none';
+      myState.inGame = false;
+      myState.name = null;
+      myState.isHost = false;
+      myState.hasVoted = false;
+      // Clear stored identifier so they get a fresh one
+      localStorage.removeItem('playerIdentifier');
+      localStorage.removeItem('playerName');
+      myState.identifier = getOrCreateIdentifier();
+    });
+
+    // Handle exit complete
+    socket.on('exitComplete', () => {
+      showScreen('join');
+      document.getElementById('readyBtn').style.display = 'inline-block';
+      document.getElementById('unreadyBtn').style.display = 'none';
+      myState.inGame = false;
+      myState.name = null;
+      myState.isHost = false;
+      myState.hasVoted = false;
+      // Clear stored data so they can rejoin fresh
+      localStorage.removeItem('playerIdentifier');
+      localStorage.removeItem('playerName');
+      myState.identifier = getOrCreateIdentifier();
+      document.getElementById('playerName').value = '';
+    });
+
+    // Handle being kicked
+    socket.on('kicked', () => {
+      showScreen('join');
+      document.getElementById('readyBtn').style.display = 'inline-block';
+      document.getElementById('unreadyBtn').style.display = 'none';
+      myState.inGame = false;
+      myState.name = null;
+      myState.isHost = false;
+      myState.hasVoted = false;
+      localStorage.removeItem('playerIdentifier');
+      localStorage.removeItem('playerName');
+      myState.identifier = getOrCreateIdentifier();
+      document.getElementById('playerName').value = '';
+      showError('You were removed from the game / Te han sacado del juego');
+    });
+
+    // Handle reconnection
+    socket.on('reconnected', (data) => {
+      if (data.success) {
+        console.log('Successfully reconnected to game!');
+        showError('Reconnected! / ¡Reconectado!');
+      } else {
+        // Need to rejoin
+        console.log('Could not reconnect, showing join screen');
+        showScreen('join');
+        const savedName = getSavedPlayerName();
+        if (savedName) {
+          document.getElementById('playerName').value = savedName;
+        }
+      }
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+      updateConnectionStatus(false);
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      updateConnectionStatus(true);
+      
+      // Try to reconnect to existing game
+      if (myState.name && myState.inGame) {
+        console.log('Attempting to reconnect to game...');
+        socket.emit('reconnect_attempt', myState.identifier, myState.name);
+      }
+    });
+
+    // Pre-fill name if saved
+    const savedName = getSavedPlayerName();
+    if (savedName) {
+      document.getElementById('playerName').value = savedName;
+    }
+
+    // Clear data button
+    document.getElementById('clearDataBtn').addEventListener('click', () => {
+      localStorage.removeItem('playerIdentifier');
+      localStorage.removeItem('playerName');
+      myState.identifier = getOrCreateIdentifier();
+      myState.name = null;
+      myState.inGame = false;
+      document.getElementById('playerName').value = '';
+      alert('Data cleared! You can now join fresh. / ¡Datos borrados! Ya puedes unirte de nuevo.');
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

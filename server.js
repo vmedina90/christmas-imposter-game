@@ -806,10 +806,21 @@ io.on('connection', (socket) => {
     const allVoted = Object.values(gameState.players).every(p => p.hasVoted);
     
     if (allVoted) {
-      // Calculate results - get all impostor names
-      const impostorNames = (gameState.impostorIds || [gameState.imposterId])
-        .map(id => gameState.players[id]?.name)
-        .filter(name => name);
+      // Calculate results - get all impostor names (check both active AND disconnected players)
+      const impostorIds = gameState.impostorIds || [gameState.imposterId];
+      const impostorNames = impostorIds.map(id => {
+        // First check active players
+        if (gameState.players[id]?.name) {
+          return gameState.players[id].name;
+        }
+        // Then check disconnected players (impostor might have briefly disconnected)
+        for (const [identifier, data] of Object.entries(disconnectedPlayers)) {
+          if (data.wasImpostor) {
+            return data.playerData.name;
+          }
+        }
+        return null;
+      }).filter(name => name);
       
       console.log('[VOTE] Impostor names:', impostorNames);
       console.log('[VOTE] All votes:', gameState.votes);

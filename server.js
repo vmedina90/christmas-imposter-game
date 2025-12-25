@@ -171,8 +171,11 @@ let gameState = {
   secretWord: null,      // { en: 'word', es: 'palabra' }
   imposterId: null,      // Single impostor (backwards compat)
   impostorIds: [],       // Array of impostor IDs (for 2+ impostors)
+  eliminatedImpostorIds: [], // Impostors who have been voted out
   votes: {},             // { votedPlayerName: count }
   votedCorrectly: null,  // true/false after vote results
+  remainingImpostors: 0, // How many impostors are still in the game
+  votedOutName: null,    // Name of the person who was voted out
   
   // For reconnection support
   playersByIdentifier: {}, // { odentifierId: socketId }
@@ -208,8 +211,11 @@ function resetGame() {
     secretWord: null,
     imposterId: null,
     impostorIds: [],
+    eliminatedImpostorIds: [],
     votes: {},
     votedCorrectly: null,
+    remainingImpostors: 0,
+    votedOutName: null,
     playersByIdentifier: {},
     lastImpostorNames: []
   };
@@ -247,11 +253,11 @@ function broadcastGameState() {
     }
 
     // Determine if we should show the secret word
-    // Show to non-impostors during playing/voting, show to EVERYONE in results if impostor was caught
+    // Show to non-impostors during playing/voting, show to EVERYONE only when ALL impostors are caught
     let showSecretWord = null;
     if (gameState.phase !== 'lobby') {
-      if (gameState.phase === 'results' && gameState.votedCorrectly) {
-        // Impostor was caught - reveal word to everyone including the impostor
+      if (gameState.phase === 'results' && gameState.votedCorrectly && gameState.remainingImpostors === 0) {
+        // ALL impostors caught - reveal word to everyone including impostors
         showSecretWord = gameState.secretWord;
       } else if (player.role !== 'impostor') {
         // During game, only non-impostors see the word
@@ -268,6 +274,9 @@ function broadcastGameState() {
       secretWord: showSecretWord,
       votes: gameState.phase === 'results' ? gameState.votes : null,
       votedCorrectly: gameState.votedCorrectly,
+      votedOutName: gameState.votedOutName,
+      remainingImpostors: gameState.remainingImpostors,
+      totalImpostors: (gameState.impostorIds || [gameState.imposterId]).length,
       imposterName: gameState.phase === 'results' ? gameState.players[gameState.imposterId]?.name || disconnectedPlayers[Object.keys(disconnectedPlayers).find(k => disconnectedPlayers[k].wasImpostor)]?.playerData.name : null
     };
 
@@ -282,13 +291,15 @@ function broadcastGameState() {
 let hostDashboards = new Set();
 
 function getHostState() {
+  const impostorIds = gameState.impostorIds || [gameState.imposterId];
   const playerList = gameState.playerOrder.map(id => {
     const p = gameState.players[id];
     if (!p) return null;
     return {
       name: p.name,
       isReady: p.isReady,
-      isImpostor: id === gameState.imposterId,
+      isImpostor: impostorIds.includes(id),
+      isEliminated: gameState.eliminatedImpostorIds.includes(id),
       hasVoted: p.hasVoted,
       isDisconnected: false
     };
@@ -311,7 +322,10 @@ function getHostState() {
     secretWord: gameState.secretWord,
     impostorName: gameState.imposterId ? gameState.players[gameState.imposterId]?.name : null,
     votes: gameState.votes,
-    votedCorrectly: gameState.votedCorrectly
+    votedCorrectly: gameState.votedCorrectly,
+    remainingImpostors: gameState.remainingImpostors,
+    votedOutName: gameState.votedOutName,
+    totalImpostors: (gameState.impostorIds || [gameState.imposterId]).length
   };
 }
 
@@ -449,7 +463,10 @@ io.on('connection', (socket) => {
   socket.on('hostContinue', () => {
     if (!hostDashboards.has(socket.id)) return;
     if (gameState.phase !== 'results') return;
-    if (gameState.votedCorrectly) return;
+    
+    // Can continue if they guessed wrong OR if there are remaining impostors
+    const canContinue = !gameState.votedCorrectly || gameState.remainingImpostors > 0;
+    if (!canContinue) return;
 
     gameState.phase = 'playing';
     for (const id of gameState.playerOrder) {
@@ -460,6 +477,7 @@ io.on('connection', (socket) => {
     }
     gameState.votes = {};
     gameState.votedCorrectly = null;
+    gameState.votedOutName = null;
     
     broadcastGameState();
     broadcastHostState();
@@ -471,8 +489,12 @@ io.on('connection', (socket) => {
     gameState.phase = 'lobby';
     gameState.secretWord = null;
     gameState.imposterId = null;
+    gameState.impostorIds = [];
+    gameState.eliminatedImpostorIds = [];
     gameState.votes = {};
     gameState.votedCorrectly = null;
+    gameState.remainingImpostors = 0;
+    gameState.votedOutName = null;
     disconnectedPlayers = {};
     
     for (const id of gameState.playerOrder) {
@@ -808,21 +830,30 @@ io.on('connection', (socket) => {
     if (allVoted) {
       // Calculate results - get all impostor names (check both active AND disconnected players)
       const impostorIds = gameState.impostorIds || [gameState.imposterId];
-      const impostorNames = impostorIds.map(id => {
+      
+      // Build a map of impostor id -> name (for tracking eliminations)
+      const impostorIdToName = {};
+      for (const id of impostorIds) {
+        // Skip already eliminated impostors
+        if (gameState.eliminatedImpostorIds.includes(id)) continue;
+        
         // First check active players
         if (gameState.players[id]?.name) {
-          return gameState.players[id].name;
-        }
-        // Then check disconnected players (impostor might have briefly disconnected)
-        for (const [identifier, data] of Object.entries(disconnectedPlayers)) {
-          if (data.wasImpostor) {
-            return data.playerData.name;
+          impostorIdToName[id] = gameState.players[id].name;
+        } else {
+          // Then check disconnected players (impostor might have briefly disconnected)
+          for (const [identifier, data] of Object.entries(disconnectedPlayers)) {
+            if (data.wasImpostor) {
+              impostorIdToName[id] = data.playerData.name;
+              break;
+            }
           }
         }
-        return null;
-      }).filter(name => name);
+      }
       
-      console.log('[VOTE] Impostor names:', impostorNames);
+      const remainingImpostorNames = Object.values(impostorIdToName);
+      
+      console.log('[VOTE] Remaining impostor names:', remainingImpostorNames);
       console.log('[VOTE] All votes:', gameState.votes);
       
       let maxVotes = 0;
@@ -837,13 +868,36 @@ io.on('connection', (socket) => {
 
       console.log('[VOTE] Top voted:', topVoted, 'with', maxVotes, 'votes');
 
-      // Check if top voted is ANY of the impostors (case-insensitive)
+      // Check if top voted is ANY of the remaining impostors (case-insensitive)
       const topVotedLower = topVoted?.toLowerCase();
-      const isImpostor = impostorNames.some(name => name.toLowerCase() === topVotedLower);
+      const votedImpostorId = Object.keys(impostorIdToName).find(
+        id => impostorIdToName[id].toLowerCase() === topVotedLower
+      );
+      const isImpostor = !!votedImpostorId;
       
       console.log('[VOTE] Is impostor?', isImpostor);
       
+      // Store who was voted out
+      gameState.votedOutName = topVoted;
       gameState.votedCorrectly = isImpostor;
+      
+      if (isImpostor) {
+        // Add this impostor to eliminated list
+        gameState.eliminatedImpostorIds.push(votedImpostorId);
+        
+        // Calculate how many impostors remain
+        const totalImpostors = impostorIds.length;
+        const eliminatedCount = gameState.eliminatedImpostorIds.length;
+        gameState.remainingImpostors = totalImpostors - eliminatedCount;
+        
+        console.log(`[VOTE] Impostor eliminated! ${gameState.remainingImpostors} remaining of ${totalImpostors}`);
+      } else {
+        // Wrong vote - impostors remain unchanged
+        const totalImpostors = impostorIds.length;
+        const eliminatedCount = gameState.eliminatedImpostorIds.length;
+        gameState.remainingImpostors = totalImpostors - eliminatedCount;
+      }
+      
       gameState.phase = 'results';
     }
 
@@ -855,8 +909,9 @@ io.on('connection', (socket) => {
     if (socket.id !== gameState.hostId) return;
     if (gameState.phase !== 'results') return;
     
-    // Can only continue if they guessed wrong
-    if (gameState.votedCorrectly) return;
+    // Can continue if they guessed wrong OR if there are remaining impostors to find
+    const canContinue = !gameState.votedCorrectly || gameState.remainingImpostors > 0;
+    if (!canContinue) return;
 
     gameState.phase = 'playing';
     for (const id of gameState.playerOrder) {
@@ -867,6 +922,7 @@ io.on('connection', (socket) => {
     }
     gameState.votes = {};
     gameState.votedCorrectly = null;
+    gameState.votedOutName = null;
     
     broadcastGameState();
   });
@@ -879,8 +935,12 @@ io.on('connection', (socket) => {
     gameState.phase = 'lobby';
     gameState.secretWord = null;
     gameState.imposterId = null;
+    gameState.impostorIds = [];
+    gameState.eliminatedImpostorIds = [];
     gameState.votes = {};
     gameState.votedCorrectly = null;
+    gameState.remainingImpostors = 0;
+    gameState.votedOutName = null;
     
     // Clear disconnected players so they can rejoin fresh
     disconnectedPlayers = {};

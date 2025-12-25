@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎄 Scan to Play - Christmas Impostor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Crimson+Pro:wght@600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    body {
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #165b33 0%, #0d3320 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: #fff8e7;
+      border-radius: 24px;
+      padding: 50px 60px;
+      text-align: center;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 8px #c41e3a,
+        0 0 0 16px #165b33;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .card::before {
+      content: '❄️';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      background: #165b33;
+      padding: 0 15px;
+    }
+
+    .decorations {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 28px;
+    }
+
+    h1 {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 2.8rem;
+      color: #c41e3a;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 0 #165b33;
+    }
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: #165b33;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 16px;
+      border: 4px dashed #c41e3a;
+    }
+
+    #qrcode img {
+      border-radius: 8px;
+    }
+
+    .url {
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 20px;
+      word-break: break-all;
+      padding: 12px 16px;
+      background: rgba(22, 91, 51, 0.1);
+      border-radius: 8px;
+      font-family: monospace;
+    }
+
+    .instructions {
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 2px dashed #c41e3a;
+    }
+
+    .instructions h2 {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 1.6rem;
+      color: #165b33;
+      margin-bottom: 15px;
+    }
+
+    .instructions ol {
+      text-align: left;
+      padding-left: 25px;
+      color: #333;
+      line-height: 1.8;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+    }
+
+    .emoji-row {
+      font-size: 2rem;
+      margin-top: 25px;
+      letter-spacing: 8px;
+    }
+
+    .print-btn {
+      margin-top: 30px;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      font-family: 'Mountains of Christmas', cursive;
+      background: #c41e3a;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
+    }
+
+    .print-btn:hover {
+      background: #a01830;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(196, 30, 58, 0.5);
+    }
+
+    .snowflakes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .snowflake {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.5rem;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0.3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="snowflakes" id="snowflakes"></div>
+  
+  <div class="card">
+    <div class="decorations">
+      <span>🎄</span>
+      <span>⭐</span>
+      <span>🎄</span>
+    </div>
+    
+    <h1>🎅 Christmas Impostor</h1>
+    <p class="subtitle">Scan to Join the Game!</p>
+    <p class="subtitle" style="font-size: 1.1rem; margin-top: -20px;">¡Escanea para Unirte!</p>
+    
+    <div id="qrcode"></div>
+    
+    <div class="url">christmas-imposter-game.onrender.com</div>
+    
+    <div class="instructions">
+      <h2>🎮 How to Play</h2>
+      <ol>
+        <li>📱 Scan the QR code with your phone</li>
+        <li>✏️ Enter your name / Escribe tu nombre</li>
+        <li>✅ Tap "Ready" when you're set</li>
+        <li>🎭 Find the impostor among us!</li>
+      </ol>
+    </div>
+    
+    <div class="emoji-row">🎁🦌🎄🔔⛄</div>
+  </div>
+  
+  <button class="print-btn no-print" onclick="window.print()">
+    🖨️ Print This QR Code
+  </button>
+
+  <script>
+    // Generate QR Code
+    new QRCode(document.getElementById("qrcode"), {
+      text: "https://christmas-imposter-game.onrender.com",
+      width: 220,
+      height: 220,
+      colorDark: "#165b33",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Create falling snowflakes
+    const snowflakesContainer = document.getElementById('snowflakes');
+    const snowflakeChars = ['❄', '❅', '❆', '✧', '✦'];
+    
+    for (let i = 0; i < 30; i++) {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+      snowflake.style.left = Math.random() * 100 + 'vw';
+      snowflake.style.animationDuration = (Math.random() * 5 + 8) + 's';
+      snowflake.style.animationDelay = (Math.random() * 10) + 's';
+      snowflake.style.fontSize = (Math.random() * 1.5 + 0.8) + 'rem';
+      snowflakesContainer.appendChild(snowflake);
+    }
+  </script>
+</body>
+</html>
+

@@ -506,6 +506,17 @@
       border: 1px solid var(--christmas-gold);
     }
 
+    .message.warning {
+      background: rgba(255, 165, 0, 0.3);
+      border: 2px solid #ff8c00;
+      animation: pulse-warning 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-warning {
+      0%, 100% { box-shadow: 0 0 10px rgba(255, 140, 0, 0.5); }
+      50% { box-shadow: 0 0 25px rgba(255, 140, 0, 0.8); }
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .container {
@@ -1093,15 +1104,51 @@
 
       const title = document.getElementById('resultsTitle');
       const message = document.getElementById('resultsMessage');
+      const votedOutName = state.votedOutName || 'Unknown';
       
       if (state.votedCorrectly) {
-        title.textContent = '🎉 Victory! / ¡Victoria!';
-        message.className = 'message info';
-        message.innerHTML = `<strong>${state.imposterName}</strong> was the impostor!<br>${state.imposterName} era el impostor!<br><br>The word was: <strong>${state.secretWord?.en || ''}</strong><br>La palabra era: <strong>${state.secretWord?.es || ''}</strong>`;
+        // They got an impostor!
+        if (state.remainingImpostors > 0) {
+          // But there are more impostors still hiding!
+          title.textContent = '🎭 Impostor Found! / ¡Impostor Encontrado!';
+          message.className = 'message warning';
+          const remaining = state.remainingImpostors;
+          message.innerHTML = `
+            <strong>${votedOutName}</strong> was an impostor!<br>
+            <strong>${votedOutName}</strong> era un impostor!<br><br>
+            ⚠️ But there's still <strong>${remaining}</strong> more impostor${remaining > 1 ? 's' : ''} hiding!<br>
+            ⚠️ ¡Pero todavía hay <strong>${remaining}</strong> impostor${remaining > 1 ? 'es' : ''} escondido${remaining > 1 ? 's' : ''}!<br><br>
+            Keep playing! / ¡Sigan jugando!
+          `;
+        } else {
+          // All impostors found - VICTORY!
+          title.textContent = '🎉 Victory! / ¡Victoria!';
+          message.className = 'message info';
+          const totalImpostors = state.totalImpostors || 1;
+          const impostorWord = totalImpostors > 1 ? 'impostors' : 'impostor';
+          const impostorWordEs = totalImpostors > 1 ? 'impostores' : 'impostor';
+          message.innerHTML = `
+            <strong>${votedOutName}</strong> was the ${totalImpostors > 1 ? 'last ' : ''}impostor!<br>
+            <strong>${votedOutName}</strong> era el ${totalImpostors > 1 ? 'último ' : ''}impostor!<br><br>
+            🎊 All ${impostorWord} found! / ¡Todos los ${impostorWordEs} encontrados!<br><br>
+            The word was: <strong>${state.secretWord?.en || ''}</strong><br>
+            La palabra era: <strong>${state.secretWord?.es || ''}</strong>
+          `;
+        }
       } else {
+        // Wrong vote - innocent player
         title.textContent = '❌ Wrong! / ¡Incorrecto!';
         message.className = 'message error';
-        message.innerHTML = `The impostor is still among you...<br>El impostor sigue entre ustedes...<br><br>Keep playing! / ¡Sigan jugando!`;
+        const remaining = state.remainingImpostors || 1;
+        const impostorText = remaining > 1 ? `${remaining} impostors are` : 'The impostor is';
+        const impostorTextEs = remaining > 1 ? `${remaining} impostores siguen` : 'El impostor sigue';
+        message.innerHTML = `
+          <strong>${votedOutName}</strong> was innocent!<br>
+          <strong>${votedOutName}</strong> era inocente!<br><br>
+          ${impostorText} still among you...<br>
+          ${impostorTextEs} entre ustedes...<br><br>
+          Keep playing! / ¡Sigan jugando!
+        `;
       }
 
       // Sort votes by count
